@@ -86,8 +86,10 @@ sudo docker run hello-world
 
 # add your user to the docker group to run docker without sudo
 sudo usermod -aG docker $USER
-newgrp docker   
+newgrp docker   #activates new group permissions, but logoff,logon will be required
 ```
+log off and log on to finalize official docker installation
+
 
 Step 3: Create the necessary directories and permissions  
 ---
@@ -117,10 +119,9 @@ mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs
 copy your unbound.conf and additional configuration files into the relevant directories here before setting permissions
 ```
 wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf 
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/ /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/ /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/ /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/ /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/
+wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/cachedb.conf /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/cachedb.conf
+wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/logging.conf /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/logging.conf
+wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/remote-control.conf /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/remote-control.conf
 ```
 
 although in the PURE-setup Pihole manages blocking via its own blocklists, the Unbound-exporter metrics require a blocklist to be present
