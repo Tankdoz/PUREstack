@@ -98,8 +98,12 @@ log off and log on to finalize official docker installation
 
 Step 3: Create the necessary directories and permissions  
 ---
-
-  3a. Pi-hole volume directories, files and permissions  
+Clone PUREstack so you get the right files with the right directory structure
+```
+git clone https://github.com/Virgil-TD/PUREstack.git \
+${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}
+```
+  3a. Pi-hole volume directories and permissions  
 ---
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
@@ -107,7 +111,7 @@ Step 3: Create the necessary directories and permissions
 - If you want to enforce specific settings, define them in docker-compose (e.g. environment variables)
 - For more details, refer to the official Pi-hole Docker documentation: https://docs.pi-hole.net/hosting/docker/
 
-  3b. Unbound volume directories, files and permissions
+  3b. Unbound volume directories and permissions
 ---
 - The klutchel/unbounf image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
 - The image runs Unbound as a non-privileged user UID 101, GID 102 after startup
