@@ -73,7 +73,7 @@ services:
       "--unbound.uri=unix:///run/unbound/unbound.sock"
     ]
   promtail:
-    image: grafana/promtail:3.2.1
+    image: grafana/promtail:3.5.8
     container_name: pure-promtail
     restart: unless-stopped
     ports:
