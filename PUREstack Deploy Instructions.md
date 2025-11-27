@@ -19,6 +19,9 @@ These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.0
 Prerequisites:  
 ---
 - a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
+- a user with sudo rights
+- these instructions assume an installation in ~/dockerprojects/stacks/pure, change commandos for your own preferences
+
 images:
 - pihole/pihole:latest  
 - klutchell/unbound:latest
@@ -26,17 +29,6 @@ images:
 - grafana/promtail:3.5.8 (latest may work as well)
 - unbound-exporter (build yourself from provided dockerfile)
 
-environment variables:  
----
-```
-# if you want to copy/paste the codeblocks, be sure to copy the environment variables first
-# you can change them for your own setup
-
-DOCKERPROJECTSDIR=~/dockerprojects        #  Preferred location for your dockerprojects folder, default is /dockerprojects under user home directory  
-STACKSDIR=/stacks                         #  Preferred location for your stacks folder under dockerprojects, default is /stacks  
-PUREDIR=/pure                             #  Preferred location for your PUREstack directory, default is /pure  
-WEBPASSWORD=changeme                      #  Change this to your desired Pi-hole web interface password  
-```
 
 Step 1: Update and upgrade the system
 ---
@@ -101,15 +93,14 @@ Step 3: Create the necessary directories and permissions
 Clone PUREstack so you get the right files with the right directory structure
 ```
 git clone https://github.com/Virgil-TD/PUREstack.git \
-${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}
+~/dockerprojects/stacks/pure
 ```
   3a. Pi-hole volume directories and permissions  
 ---
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
 - Configuration is normally handled via the Pi-hole web GUI
-- If you want to enforce specific settings, define them in docker-compose (e.g. environment variables)
-- For more details, refer to the official Pi-hole Docker documentation: https://docs.pi-hole.net/hosting/docker/
+- If you want to enforce specific settings, define them in docker-compose or an additional .env file
 
   3b. Unbound volume directories and permissions
 ---
@@ -117,54 +108,25 @@ ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}
 - The image runs Unbound as a non-privileged user UID 101, GID 102 after startup
 - Configuration file unbound.conf mounted in /etc/unbound and aditional configuration files *,conf in /etc/unbound/unbound.conf.d need to be readable by 101:102
 
-these directories used in the compose.yaml must be created manually before first startup
-```
-mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound
-mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d
-mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/blocklists
-mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs
-```
-
-copy your unbound.conf and additional configuration files into the relevant directories here before setting permissions
-```
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf 
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/cachedb.conf /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/cachedb.conf
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/logging.conf /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/logging.conf
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d/remote-control.conf /https://raw.githubusercontent.com/Virgil-TD/PUREstack/unbound.conf.d/remote-control.conf
-```
-
-although in the PURE-setup Pihole manages blocking via its own blocklists, the Unbound-exporter metrics require a blocklist to be present
-create a default blocklist file to avoid errors if no blocklists are added yet
-```
-cat <<EOF > ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/blocklists/default-blocklist.conf
-local-zone: "ads.example.com." always_nxdomain
-local-zone: "tracking.example.org." always_null
-local-zone: "malware.testsite.net." always_refuse
-EOF
-```
-create a default empty log file to avoid errors if logging to file is enabled (optional)
-```
-touch ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs/unbound.log
-```
 unbound.conf: rw for your user, read for 101:102
 ```
-sudo chown $USER:102 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf
-sudo chmod 640 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf
+sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
+sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 ```
 unbound.conf.d: rw for your user, read for 101:102
 ```
-sudo chown -R $USER:102 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d
-sudo chmod -R 640 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/unbound.conf.d
+sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
+sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
 ```
 blocklists: editable by you, readable by 101:102
 ```
-sudo chown -R $USER:102 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/blocklists
-sudo chmod -R 640 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/blocklists
+sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
+sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
 ```
 logs: must be writable by Unbound (101:102), not by you
 ```
-sudo chown -R 101:102 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs
-sudo chmod -R 750 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs
+sudo chown -R 101:102 ~/dockerprojects/stacks/pure/volumes/unbound/logs
+sudo chmod -R 750 ~/dockerprojects/stacks/pure/volumes/unbound/logs
 ```
 
   3c. Redis volume directories, files and permissions
@@ -174,8 +136,8 @@ sudo chmod -R 750 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs
 - the volume mapping ensures persistence of Redis data across container restarts
 - there is no need to make the directory writable by your user
 ```
-mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/redis/data
-sudo chown -R 999:999 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/redis/data
+mkdir -p ~/dockerprojects/stacks/pure/volumes/redis/data
+sudo chown -R 999:999 ~/dockerprojects/stacks/pure/volumes/redis/data
 ```
 
   3d. Unbound-exporter directories, files and permissions
@@ -188,17 +150,9 @@ sudo chown -R 999:999 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/redis/data
 - The blocklists directory is mapped from the host system
 - No special permission changes are needed here as the Unbound volume directories are already set above
 
-create the directory for the Dockerfile if it does not exist
-```
-mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/exporter
-```
-copy the Dockerfile for unbound-exporter to the relevant directory
-```
-wget-P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/exporter/Dockerfile https://raw.githubusercontent.com/Virgil-TD/PUREstack/exporter/Dockerfile
-```
 build the unbound-exporter image locally, it will be availabe in the image list (docker images) as unbound-exporter:latest
 ```
-cd ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/exporter
+cd ~/dockerprojects/stacks/pure/exporter
 docker build -t unbound-exporter:latest .
 ```
 
@@ -207,10 +161,7 @@ docker build -t unbound-exporter:latest .
 - Promtail runs as non-privileged user UID 1000, GID 1000 inside the container
 - The promtail volume directory must be writable by 1000:1000
 
-create promtail volume directory
-```
-mkdir -p ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail
-```
+positions.yaml:  
 create positions.yaml to avoid errors on first startup, owned by promtail user 1000:1000 and only readable by own user
 ```
 sudo touch ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions.yaml
@@ -220,18 +171,11 @@ sudo chmod 640 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/posit
 promtail-config.yaml:  
 owned by your user and readable by promtail user 1000:1000
 ```
-wget-P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml https://raw.githubusercontent.com/Virgil-TD/PUREstack/promtail/promtail-config.yaml
 sudo chown $USER:1000 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
 sudo chmod 660 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
 ```
 
-Step 4: Download the PUREstack Docker Compose file
----
-```
-cd ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}
-wget https://raw.githubusercontent.com/Virgil-TD/PUREstack/compose.yaml
-```
-Step 5: Start your PURE stack:
+Step 4: Start your PURE stack:
 ---
 ```
 cd ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}
