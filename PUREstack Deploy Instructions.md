@@ -20,7 +20,7 @@ Prerequisites:
 ---
 - a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
 - a user with sudo rights
-- these instructions assume an installation in ~/dockerprojects/stacks/pure, change commandos for your own preferences
+- these instructions assume an installation in ~/dockerprojects/stacks/pure, change to your own preferences
 
 images:
 - pihole/pihole:latest  
@@ -66,6 +66,7 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - The klutchel/unbounf image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
 - The image runs Unbound as a non-privileged user UID 101, GID 102 after startup
 - Configuration file unbound.conf mounted in /etc/unbound and aditional configuration files *,conf in /etc/unbound/unbound.conf.d need to be readable by 101:102
+- blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
 unbound.conf: rw for your user, read for 101:102
 ```
@@ -82,11 +83,6 @@ blocklists: editable by you, readable by 101:102
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
 sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
 ```
-logs: must be writable by Unbound (101:102), not by you
-```
-sudo chown -R 101:102 ~/dockerprojects/stacks/pure/volumes/unbound/logs
-sudo chmod -R 750 ~/dockerprojects/stacks/pure/volumes/unbound/logs
-```
 
   3c. Redis volume directories, files and permissions
 ---
@@ -102,7 +98,7 @@ sudo chown -R 999:999 ~/dockerprojects/stacks/pure/volumes/redis/data
   3d. Unbound-exporter directories, files and permissions
 ---
 - there is no supported image for Unbound-exporter;
-- you need to build it locally from the provided Dockerfile that you can place in the dockerprojects/stacks/pure/exporter directory
+- you need to build it locally from the provided Dockerfile in ~/dockerprojects/stacks/pure/exporter
 - Unbound-exporter runs as non-privileged user UID 1000, GID 1000 inside the container
 - It needs read access to the Unbound control socket and the blocklists directory
 - The control socket is created by Unbound in the /run/unbound directory which is mapped via a named volume
