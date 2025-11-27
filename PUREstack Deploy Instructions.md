@@ -19,7 +19,11 @@ These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.0
 Prerequisites:  
 ---
 - a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
-    
+images:
+- pihole/pihole:latest  
+- klutchell/unbound:latest
+- redis:latest
+- exporter (build yourself from provided dockerfile)
 
 environment variables:  
 ---
@@ -94,7 +98,7 @@ log off and log on to finalize official docker installation
 Step 3: Create the necessary directories and permissions  
 ---
 
-  3 a. Pi-hole volume directories, files and permissions  
+  3a. Pi-hole volume directories, files and permissions  
 ---
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
@@ -102,7 +106,7 @@ Step 3: Create the necessary directories and permissions
 - If you want to enforce specific settings, define them in docker-compose (e.g. environment variables)
 - For more details, refer to the official Pi-hole Docker documentation: https://docs.pi-hole.net/hosting/docker/
 
-  3 b. Unbound volume directories, files and permissions
+  3b. Unbound volume directories, files and permissions
 ---
 - The klutchel/unbounf image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
 - The image runs Unbound as a non-privileged user UID 101, GID 102 after startup
@@ -158,7 +162,7 @@ sudo chown -R 101:102 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/lo
 sudo chmod -R 750 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/unbound/logs
 ```
 
-  3 c. Redis volume directories, files and permissions
+  3c. Redis volume directories, files and permissions
 ---
 - Redis runs as non-privileged user UID 999, GID 999 inside the container
 - The data directory must be writable by 999:999
@@ -169,7 +173,7 @@ mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/redis/data
 sudo chown -R 999:999 ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/redis/data
 ```
 
-  3 d. Unbound-exporter directories, files and permissions
+  3d. Unbound-exporter directories, files and permissions
 ---
 - there is no supported image for Unbound-exporter;
 - you need to build it locally from the provided Dockerfile that you can place in the dockerprojects/stacks/pure/exporter directory
@@ -185,7 +189,7 @@ mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/exporter
 ```
 copy the Dockerfile for unbound-exporter to the relevant directory
 ```
-wget https://raw.githubusercontent.com/Virgil-TD/PUREstack/Dockerfile.unbound-exporter ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/exporter/Dockerfile
+wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/exporter/Dockerfile https://raw.githubusercontent.com/Virgil-TD/PUREstack/exporter/Dockerfile
 ```
 build the unbound-exporter image locally, it will be availabe in the image list (docker images) as unbound-exporter:latest
 ```
