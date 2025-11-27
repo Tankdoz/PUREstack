@@ -23,8 +23,8 @@ images:
 - pihole/pihole:latest  
 - klutchell/unbound:latest
 - redis:latest
-- promtail:3.5.8
-- exporter (build yourself from provided dockerfile)
+- grafana/promtail:3.5.8 (latest may work as well)
+- unbound-exporter (build yourself from provided dockerfile)
 
 environment variables:  
 ---
@@ -190,7 +190,7 @@ mkdir -p ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/exporter
 ```
 copy the Dockerfile for unbound-exporter to the relevant directory
 ```
-wget -P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/exporter/Dockerfile https://raw.githubusercontent.com/Virgil-TD/PUREstack/exporter/Dockerfile
+wget-P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/exporter/Dockerfile https://raw.githubusercontent.com/Virgil-TD/PUREstack/exporter/Dockerfile
 ```
 build the unbound-exporter image locally, it will be availabe in the image list (docker images) as unbound-exporter:latest
 ```
@@ -198,7 +198,7 @@ cd ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/exporter
 docker build -t unbound-exporter:latest .
 ```
 
-  3 e. Promtail volume directories and permissions
+  3e. Promtail volume directories and permissions
 ---
 - Promtail runs as non-privileged user UID 1000, GID 1000 inside the container
 - The promtail volume directory must be writable by 1000:1000
@@ -213,10 +213,10 @@ sudo touch ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions
 sudo chown 1000:1000 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions.yaml
 sudo chmod 640 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions.yaml
 ```
-promtail-config.yaml: created empty here, you need to fill it with your configuration later 
+promtail-config.yaml:  
 owned by your user and readable by promtail user 1000:1000
 ```
-sudo touch ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
+wget-P ${DOCKERPROJECTS}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml https://raw.githubusercontent.com/Virgil-TD/PUREstack/promtail/promtail-config.yaml
 sudo chown $USER:1000 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
 sudo chmod 660 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
 ```
@@ -227,5 +227,10 @@ Step 4: Download the PUREstack Docker Compose file
 cd ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}
 wget https://raw.githubusercontent.com/Virgil-TD/PUREstack/compose.yaml
 ```
-
+Step 5: Start your PURE stack:
+---
+```
+cd ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}
+docker compose up -d
+```
 
