@@ -7,8 +7,8 @@ recursive DNS resolution, caching, metrics exporting and log collection
   - unbound stats can be scraped by Prometheus
   - Prometheus and Loki can be used as data sources in Grafana for visualization
   
-For more details, see the PUREstack project page: https://github.com/yourusername/PUREstack  
-A stack for grafana, prometheus and loki is available here: https://github.com/yourusername/GRAPLstack  
+For more details, see the PUREstack project page: https://github.com/Virgil-TD/PUREstack  
+A stack for grafana, prometheus and loki is available here: https://github.com/Virgil-TD/GRAPLstack  
 For a grafana dashboard for unbound metrics see: https://github.com/ar51an/unbound-dashboard  
 
 These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.04 or later or Debian 13 or later  
