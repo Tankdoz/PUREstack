@@ -63,16 +63,18 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Configuration file unbound.conf and aditional configuration files *,conf in unbound.conf.d need to be readable by 101:102
 - blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
-unbound.conf: rw for your user, read for 101:102  
-unbound.conf.d: rw for your user, read for 101:102  
-blocklists: editable by you, readable by 101:102  
+unbound.conf: rw for your user, read for 101:102  (file)
+unbound.conf.d: rwx for your user, rx for 101:102 (directory)
+blocklists: rwx for your user, readable by 101:102  (directory)
+unbound.block.conf rw for your user, readable by 101:102 (file) -->contains 3 dummy lines
 ```
 sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
-sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
+sudo chmod 750 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
-sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
+sudo chmod 750 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
+sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists/unbound.block.conf
 ```
 
 ### 3c. Redis volume directories, files and permissions
