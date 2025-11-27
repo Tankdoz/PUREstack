@@ -15,6 +15,7 @@ These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.0
 **Pay attention to the volume directory permissions as different containers can run under different UIDs and GIDs**  
 **the permissions are set accordingly and explained in the relevant sections below**  
 **the possibility to edit configuration files as your user via ssh or vscode is preserved**  
+the usernames may look odd on the host but the ID's are correct
 
 ## Prerequisites:  
 - a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
@@ -85,6 +86,7 @@ sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists/unbound.b
 ```
 mkdir -p ~/dockerprojects/stacks/pure/volumes/redis/data
 sudo chown -R 999:999 ~/dockerprojects/stacks/pure/volumes/redis/data
+sudo chmod 770 ~/dockerprojects/stacks/pure/volumes/redis/data
 ```
 
 ### 3d. Unbound-exporter directories, files and permissions
