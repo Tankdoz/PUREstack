@@ -53,6 +53,8 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
 - Configuration is normally handled via the Pi-hole web GUI
+- make sure under DNS settings you untick any upstream DNS servers and add 127.0.0.1#5335 under Custom DNS servers
+- this will ensure Pihole only forwards to Unbound
 - If you want to enforce specific settings, define them in docker-compose or an additional .env file
 
 ### 3b. Unbound volume directories and permissions
