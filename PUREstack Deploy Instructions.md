@@ -117,9 +117,19 @@ sudo chown $USER:1000 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-con
 sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
 ```
 
-## Step 4: Start your PURE stack:
+## Step 4: Start your PURE stack(s):
+Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. In order to differentiate between services of different PUREstacks, they have to be started with a unique name since they share the same monitoring network. This is aligned with the scraping configuration of Prometheus in the GRAPLstack https://github.com/Virgil-TD/GRAPLstack
+
 ```
 cd ~/dockerprojects/stacks/pure
-docker compose up -d
+# first stack to be deployed with
+docker compose -p pure1 up -d
 ```
-
+```
+# second stack to be deployed with
+docker compose -p pure2 up -d
+```
+```
+# third stack to be deployed with 
+docker compose -p pure3 up -d
+```

@@ -1,18 +1,21 @@
 ###########################################
-# PUREstack DNS Stack
+# PUREstack (P)ihole, (U)nbound, (R)edis, (E)xporters
 ###########################################
-#   This stack provides a comprehensive DNS solution using:    
+#  Docker Compose file sets up a DNS stack with the following services:   
 #   - Pi-hole for network-wide ad blocking and DNS management.
 #   - Unbound as a recursive DNS resolver for enhanced privacy and security.
 #   - Redis as a caching layer to improve DNS query performance.
 #   - Unbound Exporter to expose Unbound metrics for monitoring with Prometheus.
 #   - Promtail to collect and forward logs to Loki for centralized logging.
+#   - a bridge network for communication between unbound and redis
+#   - an external network for integration with a GRAPL stack (GRA)fana, (P)rometheus, (L)oki
+#   - see https://github.com/Virgil-TD/GRAPLstack for GRAPL stack 
+#   - see https://github.com/ar51an/unbound-dashboard for Unbound monitoring dashboard
 ###########################################
 services:
   pihole:
     container_name: pure-pihole
     image: pihole/pihole:latest
-    hostname: PUREstack-dockerserver
     ports:
       - 443:443/tcp
       - 53:53/tcp
@@ -37,7 +40,6 @@ services:
       - promtail_host=PUREstack-dockerserver
     volumes:
       - ./volumes/unbound:/etc/unbound # location of unbound.conf and unbound.conf.d for additional .conf files
-    #  - ./volumes/unbound/logs:/var/log/unbound # Volume for Unbound logs if logging to file is desired, default is logging to stdout
       - ./volumes/unbound/blocklists:/opt/unbound/blocklists # Volume for custom blocklists
       - unbound-run:/run/unbound # Volume for /run so Unbound can create its control socket. Used in remote control.
     networks:
@@ -62,7 +64,7 @@ services:
     ports:
       - 9167:9167   # Prometheus metrics endpoint
     networks:
-      - dnsnet
+      - monitoring
     depends_on:
       - unbound
     volumes:
@@ -79,15 +81,18 @@ services:
     ports:
       - 9080:9080   # Promtail HTTP server port
     volumes:
-    #  - ./volumes/unbound/logs:/var/log/unbound                          # to read docker container logfiles
-      - /var/run/docker.sock:/var/run/docker.sock:ro                      # to access docker logs in stdout
-      - ./volumes/promtail:/tmp                                           # to store the last read positions
-      - ./volumes/promtail/promtail-config.yaml:/etc/promtail/config.yaml # promtail configuration file
+      - /var/run/docker.sock:/var/run/docker.sock:ro                         # to access docker logs in stdout
+      - ./volumes/promtail:/tmp                                              # to store the last read positions
+      - ./volumes/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro # promtail configuration file
     command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - monitoring
 
 networks:
   dnsnet:
-    driver: bridge   # Dedicated bridge network for DNS + Redis communication  
+    driver: bridge   # Dedicated bridge network for DNS + Redis communication 
+  monitoring:
+    external: true  # External network for integration with GRAPL stack (Grafana, Prometheus, Loki) 
 volumes:
   unbound-run: null  # Named volume for /run so Unbound can create its control socket. Used in remote control.
   redis-data: null   # Named volume for Redis persistence
