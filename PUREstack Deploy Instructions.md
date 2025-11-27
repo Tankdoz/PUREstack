@@ -15,6 +15,7 @@ These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.0
 **Pay attention to the volume directory permissions as different containers can run under different UIDs and GIDs**  
 **the permissions are set accordingly and explained in the relevant sections below**  
 **the possibility to edit configuration files as your user via ssh or vscode is preserved**  
+the usernames may look odd on the host but the ID's are correct
 
 ## Prerequisites:  
 - a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
@@ -53,6 +54,8 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
 - Configuration is normally handled via the Pi-hole web GUI
+- make sure under DNS settings you untick any upstream DNS servers and add 127.0.0.1#5335 under Custom DNS servers
+- this will ensure Pihole only forwards to Unbound
 - If you want to enforce specific settings, define them in docker-compose or an additional .env file
 
 ### 3b. Unbound volume directories and permissions
@@ -61,16 +64,18 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Configuration file unbound.conf and aditional configuration files *,conf in unbound.conf.d need to be readable by 101:102
 - blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
-unbound.conf: rw for your user, read for 101:102  
-unbound.conf.d: rw for your user, read for 101:102  
-blocklists: editable by you, readable by 101:102  
+unbound.conf: rw for your user, read for 101:102  (file)
+unbound.conf.d: rwx for your user, rx for 101:102 (directory)
+blocklists: rwx for your user, readable by 101:102  (directory)
+unbound.block.conf rw for your user, readable by 101:102 (file) -->contains 3 dummy lines
 ```
 sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
-sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
+sudo chmod 750 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
-sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
+sudo chmod 750 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
+sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists/unbound.block.conf
 ```
 
 ### 3c. Redis volume directories, files and permissions
@@ -81,6 +86,7 @@ sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
 ```
 mkdir -p ~/dockerprojects/stacks/pure/volumes/redis/data
 sudo chown -R 999:999 ~/dockerprojects/stacks/pure/volumes/redis/data
+sudo chmod 770 ~/dockerprojects/stacks/pure/volumes/redis/data
 ```
 
 ### 3d. Unbound-exporter directories, files and permissions
