@@ -61,9 +61,9 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Configuration file unbound.conf and aditional configuration files *,conf in unbound.conf.d need to be readable by 101:102
 - blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
-unbound.conf: rw for your user, read for 101:102
-unbound.conf.d: rw for your user, read for 101:102
-blocklists: editable by you, readable by 101:102
+unbound.conf: rw for your user, read for 101:102  
+unbound.conf.d: rw for your user, read for 101:102  
+blocklists: editable by you, readable by 101:102  
 ```
 sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
@@ -85,7 +85,7 @@ sudo chown -R 999:999 ~/dockerprojects/stacks/pure/volumes/redis/data
 
 ### 3d. Unbound-exporter directories, files and permissions
 ---
-- there is no supported image for ar51an's unbound-exporter
+- there is no supported image for https://github.com/ar51an/unbound-exporter
 - you need to build it locally from the provided Dockerfile in ~/dockerprojects/stacks/pure/exporter
 - Unbound-exporter runs as non-privileged user UID 1000, GID 1000 inside the container
 - It needs read access to the Unbound control socket and the blocklists directory
@@ -106,20 +106,20 @@ docker build -t unbound-exporter:latest .
 positions.yaml:  
 create positions.yaml to avoid errors on first startup, owned by promtail user 1000:1000 and only readable by own user
 ```
-sudo touch ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions.yaml
-sudo chown 1000:1000 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions.yaml
-sudo chmod 640 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/positions.yaml
+sudo touch ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
+sudo chown 1000:1000 ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
+sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
 ```
 promtail-config.yaml:  
 owned by your user and readable by promtail user 1000:1000
 ```
-sudo chown $USER:1000 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
-sudo chmod 660 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
+sudo chown $USER:1000 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
+sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
 ```
 
 ## Step 4: Start your PURE stack:
 ```
-cd ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}
+cd ~/dockerprojects/stacks/pure
 docker compose up -d
 ```
 
