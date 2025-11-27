@@ -1,0 +1,49 @@
+server:
+  http_listen_port: 9080        # promtail http server port
+  grpc_listen_port: 0           # disable gRPC server
+
+positions:
+  filename: /tmp/positions.yaml # file to store the last read positions
+
+clients:
+  - url: http://192.168.1.72:3100/loki/api/v1/push # Grafana Loki endpoint
+
+scrape_configs:
+  - job_name: unbound
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+    relabel_configs:
+      # only keep containers with label promtail_job=unbound
+      - source_labels: [__meta_docker_container_label_promtail_job]
+        regex: unbound
+        action: keep
+
+      # Set job label from promtail_job label in compose file
+      - source_labels: [__meta_docker_container_label_promtail_job]
+        target_label: job
+
+      # Strip leading slash from container name and set as 'container' label
+      - source_labels: [__meta_docker_container_name]
+        regex: /(.*)
+        replacement: $1
+        target_label: container
+
+      # Set host label from promtail_host label in compose file
+      - source_labels: [__meta_docker_container_label_promtail_host]
+        target_label: host
+
+
+    pipeline_stages:
+      - match:
+          selector: '{job="unbound"} |~ " start | stopped |.*in-addr.arpa."'
+          action: drop
+      - match:
+          selector: '{job="unbound"} |= "reply:"'
+          stages:
+            - static_labels:
+                dns: reply
+      - match:
+          selector: '{job="unbound"} |~ "always_null|redirect|always_nxdomain"'
+          stages:
+            - static_labels:
+                dns: block
