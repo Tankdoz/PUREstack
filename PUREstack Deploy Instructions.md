@@ -23,6 +23,7 @@ images:
 - pihole/pihole:latest  
 - klutchell/unbound:latest
 - redis:latest
+- promtail:3.5.8
 - exporter (build yourself from provided dockerfile)
 
 environment variables:  
