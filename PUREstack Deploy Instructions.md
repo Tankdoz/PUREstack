@@ -39,7 +39,7 @@ sudo reboot
 
 Step 2: Install Docker and Docker Compose  
 ---
-You can skip this if already installed or use the Docker-approved method   
+You can skip this if already installed or use the Docker-approved method as described in [Official Docker Install.md](Official Docker Install.md) 
 
 ```
 sudo apt install -y docker.io docker-compose
