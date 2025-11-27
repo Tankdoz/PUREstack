@@ -1,4 +1,4 @@
-P.U.R.E.---> (P)i-hole, (U)nbound, (R)edis, and (E)xporters
+# P.U.R.E.---> (P)i-hole, (U)nbound, (R)edis, and (E)xporters
 ---
 this stack deploys a full-featured DNS solution with ad-blocking, 
 recursive DNS resolution, caching, metrics exporting and log collection  
@@ -16,13 +16,11 @@ These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.0
 **the permissions are set accordingly and explained in the relevant sections below**  
 **the possibility to edit configuration files as your user via ssh or vscode is preserved**  
 
-Prerequisites:  
----
+## Prerequisites:  
 - a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
 - a user with sudo rights
 - these instructions assume an installation in ~/dockerprojects/stacks/pure, change to your own preferences
-
-images:
+### images:
 - pihole/pihole:latest  
 - klutchell/unbound:latest
 - redis:latest
@@ -30,16 +28,14 @@ images:
 - unbound-exporter (build yourself from provided dockerfile)
 
 
-Step 1: Update and upgrade the system
----
+## Step 1: Update and upgrade the system
 ```
 sudo apt update && sudo apt upgrade -y
 sudo reboot
 ```
 
-Step 2: Install Docker and Docker Compose  
----
-You can skip this if already installed or use the Docker-approved method as described in [Official Docker Install.md](Official Docker Install.md) 
+## Step 2: Install Docker and Docker Compose  
+You can skip this if already installed or use the Docker-approved method as described in Official Docker Install.md
 
 ```
 sudo apt install -y docker.io docker-compose
@@ -47,45 +43,37 @@ sudo systemctl start docker
 sudo systemctl enable docker
 ````
 
-Step 3: Create the necessary directories and permissions  
----
-Clone PUREstack so you get the right files with the right directory structure
+## Step 3: Create the necessary directories and permissions  
+Clone PUREstack so you get the right files with the right directory structure; permissions will be updated later
 ```
 git clone https://github.com/Virgil-TD/PUREstack.git \
 ~/dockerprojects/stacks/pure
 ```
-  3a. Pi-hole volume directories and permissions  
----
+### 3a. Pi-hole volume directories and permissions  
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
 - Configuration is normally handled via the Pi-hole web GUI
 - If you want to enforce specific settings, define them in docker-compose or an additional .env file
 
-  3b. Unbound volume directories and permissions
----
+### 3b. Unbound volume directories and permissions
 - The klutchel/unbounf image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
 - The image runs Unbound as a non-privileged user UID 101, GID 102 after startup
-- Configuration file unbound.conf mounted in /etc/unbound and aditional configuration files *,conf in /etc/unbound/unbound.conf.d need to be readable by 101:102
+- Configuration file unbound.conf and aditional configuration files *,conf in unbound.conf.d need to be readable by 101:102
 - blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
 unbound.conf: rw for your user, read for 101:102
+unbound.conf.d: rw for your user, read for 101:102
+blocklists: editable by you, readable by 101:102
 ```
 sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
-```
-unbound.conf.d: rw for your user, read for 101:102
-```
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
 sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf.d
-```
-blocklists: editable by you, readable by 101:102
-```
 sudo chown -R $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
 sudo chmod -R 640 ~/dockerprojects/stacks/pure/volumes/unbound/blocklists
 ```
 
-  3c. Redis volume directories, files and permissions
----
+### 3c. Redis volume directories, files and permissions
 - Redis runs as non-privileged user UID 999, GID 999 inside the container
 - The data directory must be writable by 999:999
 - the volume mapping ensures persistence of Redis data across container restarts
@@ -95,13 +83,13 @@ mkdir -p ~/dockerprojects/stacks/pure/volumes/redis/data
 sudo chown -R 999:999 ~/dockerprojects/stacks/pure/volumes/redis/data
 ```
 
-  3d. Unbound-exporter directories, files and permissions
+### 3d. Unbound-exporter directories, files and permissions
 ---
-- there is no supported image for Unbound-exporter;
+- there is no supported image for ar51an's unbound-exporter
 - you need to build it locally from the provided Dockerfile in ~/dockerprojects/stacks/pure/exporter
 - Unbound-exporter runs as non-privileged user UID 1000, GID 1000 inside the container
 - It needs read access to the Unbound control socket and the blocklists directory
-- The control socket is created by Unbound in the /run/unbound directory which is mapped via a named volume
+- The control socket is created by Unbound in the /run/unbound directory which is mapped via a named volume (compose.yaml)
 - The blocklists directory is mapped from the host system
 - No special permission changes are needed here as the Unbound volume directories are already set above
 
@@ -111,8 +99,7 @@ cd ~/dockerprojects/stacks/pure/exporter
 docker build -t unbound-exporter:latest .
 ```
 
-  3e. Promtail volume directories and permissions
----
+### 3e. Promtail volume directories and permissions
 - Promtail runs as non-privileged user UID 1000, GID 1000 inside the container
 - The promtail volume directory must be writable by 1000:1000
 
@@ -130,8 +117,7 @@ sudo chown $USER:1000 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtai
 sudo chmod 660 ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}/volumes/promtail/promtail-config.yaml
 ```
 
-Step 4: Start your PURE stack:
----
+## Step 4: Start your PURE stack:
 ```
 cd ${DOCKERPROJECTSDIR}${STACKSDIR}${PUREDIR}
 docker compose up -d
