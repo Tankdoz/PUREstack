@@ -11,10 +11,10 @@
 #   - an external network for integration with a GRAPL stack (GRA)fana, (P)rometheus, (L)oki
 #   - see https://github.com/Virgil-TD/GRAPLstack for GRAPL stack 
 #   - see https://github.com/ar51an/unbound-dashboard for Unbound monitoring dashboard
+#   - see https://github.com/ar51an/unbound-exporter for Unbound Exporter
 ###########################################
 services:
   pihole:
-    container_name: pure-pihole
     image: pihole/pihole:latest
     ports:
       - 443:443/tcp
@@ -30,7 +30,6 @@ services:
     restart: unless-stopped
   unbound:
     image: klutchell/unbound:latest
-    container_name: pure-unbound
     restart: unless-stopped
     ports:
       - 5335:5335/tcp
@@ -48,7 +47,6 @@ services:
       - redis
   redis:
     image: redis:latest
-    container_name: pure-redis
     restart: unless-stopped
     ports:
       - 6379:6379
@@ -58,8 +56,7 @@ services:
       - redis-data:/data # Named volume to persist Redis data
 
   unbound-exporter:
-    image: unbound-exporter:latest   # use your locally built image
-    container_name: pure-exporter
+    image: unbound-exporter:latest   # use your locally built image    
     restart: unless-stopped
     ports:
       - 9167:9167   # Prometheus metrics endpoint
@@ -76,7 +73,6 @@ services:
     ]
   promtail:
     image: grafana/promtail:3.5.8
-    container_name: pure-promtail
     restart: unless-stopped
     ports:
       - 9080:9080   # Promtail HTTP server port
@@ -92,7 +88,7 @@ networks:
   dnsnet:
     driver: bridge   # Dedicated bridge network for DNS + Redis communication 
   monitoring:
-    external: true  # External network for integration with GRAPL stack (Grafana, Prometheus, Loki) 
+    external: true   # External network for integration with GRAPL stack (Grafana, Prometheus, Loki) 
 volumes:
   unbound-run: null  # Named volume for /run so Unbound can create its control socket. Used in remote control.
   redis-data: null   # Named volume for Redis persistence
