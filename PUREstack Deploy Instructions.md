@@ -122,18 +122,22 @@ sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yam
 ```
 
 ## Step 4: Start your PURE stack(s):
-Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. In order to differentiate between services of different PUREstacks, they have to be started with a unique name since they share the same monitoring network. This is aligned with the scraping configuration of Prometheus in the GRAPLstack https://github.com/Virgil-TD/GRAPLstack
+Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. 
+In order to differentiate between the different stacks you should use the .env file. For the PURE stack the default .env file is:
 
+.env file:  
 ```
 cd ~/dockerprojects/stacks/pure
-# first stack to be deployed with
-docker compose -p pure1 up -d
+cat > .env <<EOF
+WEBPASSWORD=changeme
+HOSTNAME=PUREstack-010
+LOKIIP=192.168.1.22
+EOF
 ```
+you should change the Pihole-password and use a naming convention to ensure consistency when injecting data via loki and prometheus in grafana  
+
+next bring up your stack
 ```
-# second stack to be deployed with
-docker compose -p pure2 up -d
-```
-```
-# third stack to be deployed with 
-docker compose -p pure3 up -d
+cd ~/dockerprojects/stacks/pure
+docker compose up -d
 ```
