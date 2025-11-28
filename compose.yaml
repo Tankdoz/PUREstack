@@ -59,8 +59,6 @@ services:
     restart: unless-stopped
     ports:
       - 9167:9167   # Prometheus metrics endpoint
-    networks:
-      - monitoring
     depends_on:
       - unbound
     volumes:
@@ -80,14 +78,10 @@ services:
       - ./volumes/promtail:/tmp                                              # to store the last read positions
       - ./volumes/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro # promtail configuration file
     command: -config.file=/etc/promtail/config.yaml
-    networks:
-      - monitoring
 
 networks:
   dnsnet:
     driver: bridge   # Dedicated bridge network for DNS + Redis communication 
-  monitoring:
-    external: true   # External network for integration with GRAPL stack (Grafana, Prometheus, Loki) 
 volumes:
   unbound-run: null  # Named volume for /run so Unbound can create its control socket. Used in remote control.
   redis-data: null   # Named volume for Redis persistence
