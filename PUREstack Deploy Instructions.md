@@ -110,32 +110,43 @@ docker build -t unbound-exporter:latest .
 - The promtail volume directory must be writable by 1000:1000
 
 positions.yaml:  
-create positions.yaml to avoid errors on first startup, owned by promtail user 1000:1000 and only readable by own user
+create positions.yaml to avoid errors on first startup, owned by promtail user 1000:1000 and only readable by own user  
+promtail-config.yaml:  
+owned by your user and readable by promtail user 1000:1000  
 ```
 sudo touch ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
 sudo chown 1000:1000 ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
-```
-promtail-config.yaml:  
-owned by your user and readable by promtail user 1000:1000
-```
 sudo chown $USER:1000 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
 sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
 ```
 
 ## Step 4: Start your PURE stack(s):
-Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. In order to differentiate between services of different PUREstacks, they have to be started with a unique name since they share the same monitoring network. This is aligned with the scraping configuration of Prometheus in the GRAPLstack https://github.com/Virgil-TD/GRAPLstack
+Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. 
+In order to differentiate between the different stacks you should use the .env file. For the PURE stack the default .env file is:
 
+.env file:  
 ```
 cd ~/dockerprojects/stacks/pure
-# first stack to be deployed with
-docker compose -p pure1 up -d
+cat > .env <<EOF
+WEBPASSWORD=changeme     # choose your own
+HOSTNAME=PUREstack-010   # this name will be used by promtail to label the data from this stack, reuse it in your prometheus configuration 
+LOKIIP=192.168.1.22      # IP adress of your LOKI server
+EOF
 ```
+edit the .env file to reflect the settings in your environment
 ```
-# second stack to be deployed with
-docker compose -p pure2 up -d
+sudo nano .env
 ```
+
+next bring up your stack
 ```
-# third stack to be deployed with 
-docker compose -p pure3 up -d
+cd ~/dockerprojects/stacks/pure
+docker compose up -d
 ```
+## Step 5: Log in to Pihole and set Unbound as its upstream DNS resolver
+- Open a webbrowser and enter ip-adress-pihole/admin  (use your ip-adress)
+- you will get a logon screen where you can enter the password that you set in your .env file
+- go to Settings > DNS : untick all upstream DNS resolvers and enter 127.0.0.1#5335 in custom DNS providers
+- this will ensure Pihole forwards only to Unbound
+
