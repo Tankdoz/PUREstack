@@ -8,7 +8,6 @@
 #   - Unbound Exporter to expose Unbound metrics for monitoring with Prometheus.
 #   - Promtail to collect and forward logs to Loki for centralized logging.
 #   - a bridge network for communication between unbound and redis
-#   - an external network for integration with a GRAPL stack (GRA)fana, (P)rometheus, (L)oki
 #   - see https://github.com/Virgil-TD/GRAPLstack for GRAPL stack 
 #   - see https://github.com/ar51an/unbound-dashboard for Unbound monitoring dashboard
 #   - see https://github.com/ar51an/unbound-exporter for Unbound Exporter
@@ -16,6 +15,7 @@
 services:
   pihole:
     image: pihole/pihole:latest
+    hostname: ${HOSTNAME}
     ports:
       - 443:443/tcp
       - 53:53/tcp
@@ -35,7 +35,7 @@ services:
       - 5335:5335/udp
     labels:
       - promtail_job=unbound
-      - promtail_host=PUREstack-dockerserver
+      - promtail_host=${HOSTNAME}
     volumes:
       - ./volumes/unbound:/etc/unbound # location of unbound.conf and unbound.conf.d for additional .conf files
       - ./volumes/unbound/blocklists:/opt/unbound/blocklists # Volume for custom blocklists
@@ -71,6 +71,9 @@ services:
   promtail:
     image: grafana/promtail:3.5.8
     restart: unless-stopped
+    environment:
+      - HOSTNAME=${HOSTNAME}
+      - LOKIIP=${LOKIIP}
     ports:
       - 9080:9080   # Promtail HTTP server port
     volumes:
