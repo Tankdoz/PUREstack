@@ -24,6 +24,7 @@ services:
     environment:
       - TZ=Europe/Amsterdam
       - FTLCONF_webserver_api_password=${WEBPASSWORD}
+      - FTLCONF_dns_upstreams=${HOSTIP}#5335
     volumes:
       - ./volumes/pihole/etc-pihole:/etc/pihole
     restart: unless-stopped

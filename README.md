@@ -131,7 +131,8 @@ In order to differentiate between the different stacks you should use the .env f
 cd ~/dockerprojects/stacks/pure
 cat > .env <<EOF
 WEBPASSWORD=changeme     # choose your own
-HOSTNAME=PUREstack-010   # this name will be used by promtail to label the data from this stack, reuse it in your prometheus configuration 
+HOSTNAME=PUREstack-010   # this name will be used by promtail to label the data from this stack, reuse it in your prometheus configuration
+HOSTIP=192.168.1.10      # IP adress of the PURE host, this will be used to connect pihole to unbound 
 LOKIIP=192.168.1.22      # IP adress of your LOKI server
 EOF
 ```
@@ -148,5 +149,5 @@ docker compose up -d
 ## Step 5: Log in to Pihole and set Unbound as its upstream DNS resolver
 - Open a webbrowser and enter ip-adress-pihole/admin  (use your ip-adress)
 - you will get a logon screen where you can enter the password that you set in your .env file
-- go to Settings > DNS : untick all upstream DNS resolvers and enter 127.0.0.1#5335 in custom DNS providers
+- go to Settings > DNS : untick all upstream DNS resolvers and enter ip-adress-pihole#5335 in custom DNS providers
 - this will ensure Pihole forwards only to Unbound
