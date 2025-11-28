@@ -129,12 +129,15 @@ In order to differentiate between the different stacks you should use the .env f
 ```
 cd ~/dockerprojects/stacks/pure
 cat > .env <<EOF
-WEBPASSWORD=changeme
-HOSTNAME=PUREstack-010
-LOKIIP=192.168.1.22
+WEBPASSWORD=changeme     # choose your own
+HOSTNAME=PUREstack-010   # use a naming convention if you are going to deploy multiple PURE stacks
+LOKIIP=192.168.1.22      # IP adress of your LOKI server
 EOF
 ```
-you should change the Pihole-password and use a naming convention to ensure consistency when injecting data via loki and prometheus in grafana  
+edit the .env file to reflect the settings in your environment
+```
+sudo nano .env
+```
 
 next bring up your stack
 ```
