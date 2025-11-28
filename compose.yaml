@@ -80,7 +80,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro                         # to access docker logs in stdout
       - ./volumes/promtail:/tmp                                              # to store the last read positions
       - ./volumes/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro # promtail configuration file
-    command: -config.file=/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml -config.expand-env=true
 
 networks:
   dnsnet:
