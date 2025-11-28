@@ -146,8 +146,4 @@ next bring up your stack
 cd ~/dockerprojects/stacks/pure
 docker compose up -d
 ```
-## Step 5: Log in to Pihole and set Unbound as its upstream DNS resolver
-- Open a webbrowser and enter ip-adress-pihole/admin  (use your ip-adress)
-- you will get a logon screen where you can enter the password that you set in your .env file
-- go to Settings > DNS : untick all upstream DNS resolvers and enter ip-adress-pihole#5335 in custom DNS providers
-- this will ensure Pihole forwards only to Unbound
+
