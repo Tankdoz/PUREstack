@@ -1,1 +1,90 @@
-404: Not Found
+##########################################
+# PUREstack (P)ihole, (U)nbound, (R)edis, (E)xporters
+###########################################
+#  Docker Compose file sets up a DNS stack with the following services:   
+#   - Pi-hole for network-wide ad blocking and DNS management.
+#   - Unbound as a recursive DNS resolver for enhanced privacy and security.
+#   - Redis as a caching layer to improve DNS query performance.
+#   - Unbound Exporter to expose Unbound metrics for monitoring with Prometheus.
+#   - Promtail to collect and forward logs to Loki for centralized logging.
+#   - a bridge network for communication between unbound and redis
+#   - see https://github.com/Virgil-TD/GRAPLstack for GRAPL stack 
+#   - see https://github.com/ar51an/unbound-dashboard for Unbound monitoring dashboard
+#   - see https://github.com/ar51an/unbound-exporter for Unbound Exporter
+###########################################
+services:
+  pihole:
+    image: pihole/pihole:latest
+    hostname: ${HOSTNAME}
+    ports:
+      - 443:443/tcp
+      - 53:53/tcp
+      - 53:53/udp
+      - 80:80/tcp
+    environment:
+      - TZ=Europe/Amsterdam
+      - FTLCONF_webserver_api_password=${WEBPASSWORD}
+    volumes:
+      - ./volumes/pihole/etc-pihole:/etc/pihole
+    restart: unless-stopped
+  unbound:
+    image: klutchell/unbound:latest
+    restart: unless-stopped
+    ports:
+      - 5335:5335/tcp
+      - 5335:5335/udp
+    labels:
+      - promtail_job=unbound
+      - promtail_host=${HOSTNAME}
+    volumes:
+      - ./volumes/unbound:/etc/unbound # location of unbound.conf and unbound.conf.d for additional .conf files
+      - ./volumes/unbound/blocklists:/opt/unbound/blocklists # Volume for custom blocklists
+      - unbound-run:/run/unbound # Volume for /run so Unbound can create its control socket. Used in remote control.
+    networks:
+      - dnsnet
+    depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - dnsnet
+    volumes:
+      - redis-data:/data # Named volume to persist Redis data
+
+  unbound-exporter:
+    image: unbound-exporter:latest   # use your locally built image    
+    restart: unless-stopped
+    ports:
+      - 9167:9167   # Prometheus metrics endpoint
+    depends_on:
+      - unbound
+    volumes:
+      - unbound-run:/run/unbound:ro   # mount Unbound control socket
+      - ./volumes/unbound/blocklists:/opt/unbound/blocklists:ro # mount blocklists for exporter metrics
+    command: [
+      "--web.listen-address=0.0.0.0:9167",
+      "--unbound.uri=unix:///run/unbound/unbound.sock"
+    ]
+  promtail:
+    image: grafana/promtail:3.5.8
+    restart: unless-stopped
+    environment:
+      - HOSTNAME=${HOSTNAME}
+      - LOKIIP=${LOKIIP}
+    ports:
+      - 9080:9080   # Promtail HTTP server port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro                         # to access docker logs in stdout
+      - ./volumes/promtail:/tmp                                              # to store the last read positions
+      - ./volumes/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro # promtail configuration file
+    command: -config.file=/etc/promtail/config.yaml
+
+networks:
+  dnsnet:
+    driver: bridge   # Dedicated bridge network for DNS + Redis communication 
+volumes:
+  unbound-run: null  # Named volume for /run so Unbound can create its control socket. Used in remote control.
+  redis-data: null   # Named volume for Redis persistence
