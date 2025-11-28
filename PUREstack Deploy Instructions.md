@@ -110,15 +110,13 @@ docker build -t unbound-exporter:latest .
 - The promtail volume directory must be writable by 1000:1000
 
 positions.yaml:  
-create positions.yaml to avoid errors on first startup, owned by promtail user 1000:1000 and only readable by own user
+create positions.yaml to avoid errors on first startup, owned by promtail user 1000:1000 and only readable by own user  
+promtail-config.yaml:  
+owned by your user and readable by promtail user 1000:1000  
 ```
 sudo touch ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
 sudo chown 1000:1000 ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/promtail/positions.yaml
-```
-promtail-config.yaml:  
-owned by your user and readable by promtail user 1000:1000
-```
 sudo chown $USER:1000 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
 sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yaml
 ```
