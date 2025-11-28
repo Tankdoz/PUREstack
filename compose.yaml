@@ -26,7 +26,6 @@ services:
       - FTLCONF_webserver_api_password=${WEBPASSWORD}
     volumes:
       - ./volumes/pihole/etc-pihole:/etc/pihole
-      - ./volumes/pihole/etc-dnsmasq:/etc/dnsmasq.d
     restart: unless-stopped
   unbound:
     image: klutchell/unbound:latest
