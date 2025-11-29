@@ -1,7 +1,7 @@
 
 # P.U.R.E.---> (P)i-hole, (U)nbound, (R)edis, and (E)xporters
 ---
-this stack deploys a full-featured DNS solution with ad-blocking, 
+this stack deploys a DNS solution with ad-blocking, 
 recursive DNS resolution, caching, metrics exporting and log collection  
 
   - unbound log collection can be pushed to Loki via Promtail
@@ -10,16 +10,19 @@ recursive DNS resolution, caching, metrics exporting and log collection
   
 For more details, see the PUREstack project page: https://github.com/Virgil-TD/PUREstack  
 A stack for grafana, prometheus and loki is available here: https://github.com/Virgil-TD/GRAPLstack  
+For en exporter I used https://github.com/ar51an/unbound-exporter. 
 For a grafana dashboard for unbound metrics see: https://github.com/ar51an/unbound-dashboard  
 
-These are instructions on how to deploy PUREstack on a new host with Ubuntu 24.04 or later or Debian 13 or later  
+You can deploy multiple PUREstacks in your environment (for redundancy) although not on teh same host as Pihole requires unique ownership of port 53.  
+
 **Pay attention to the volume directory permissions as different containers can run under different UIDs and GIDs**  
 **the permissions are set accordingly and explained in the relevant sections below**  
 **the possibility to edit configuration files as your user via ssh or vscode is preserved**  
-the usernames may look odd on the host but the ID's are correct
+
+(the usernames may look odd on the host but the ID's are correct)
 
 ## Prerequisites:  
-- a host running either Ubuntu 24.04 or Debian 13 is preferred, older versions may work as well
+- a host running either a recent Debian-like OS (Works on RPi as well)
 - a user with sudo rights
 - these instructions assume an installation in ~/dockerprojects/stacks/pure, change to your own preferences
 ### images:
@@ -57,7 +60,7 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Configuration is normally handled via the Pi-hole web GUI
 - make sure under DNS settings you untick any upstream DNS servers and add 127.0.0.1#5335 under Custom DNS servers
 - this will ensure Pihole only forwards to Unbound
-- If you want to enforce specific settings, define them in docker-compose or an additional .env file
+- If you want to enforce specific settings, define them in docker-compose or in an .env file
 
 ### 3b. Unbound volume directories and permissions
 - The klutchel/unbounf image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
@@ -65,10 +68,10 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Configuration file unbound.conf and aditional configuration files *,conf in unbound.conf.d need to be readable by 101:102
 - blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
-unbound.conf: rw for your user, read for 101:102  (file)
-unbound.conf.d: rwx for your user, rx for 101:102 (directory)
-blocklists: rwx for your user, readable by 101:102  (directory)
-unbound.block.conf rw for your user, readable by 101:102 (file) -->contains 3 dummy lines
+unbound.conf: rw for your user, read for 101:102  (file). 
+unbound.conf.d: rwx for your user, rx for 101:102 (directory). 
+blocklists: rwx for your user, readable by 101:102  (directory). 
+unbound.block.conf rw for your user, readable by 101:102 (file) -->contains 3 dummy lines. 
 ```
 sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
@@ -124,19 +127,20 @@ sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yam
 
 ## Step 4: Start your PURE stack(s):
 Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. 
-In order to differentiate between the different stacks you should use the .env file. For the PURE stack the default .env file is:
+In order to differentiate between the different stacks you should use the .env file. For the PURE stack the default .env file contains at least:
 
 .env file:  
 ```
 cd ~/dockerprojects/stacks/pure
 cat > .env <<EOF
-WEBPASSWORD=changeme     # choose your own
-HOSTNAME=PUREstack-010   # this name will be used by promtail to label the data from this stack, reuse it in your prometheus configuration
+WEBPASSWORD=changeme     # require to log into the Pihole webinterface; choose your own password. 
+HOSTNAME=PUREstack-010   # will be used by promtail to label the data from this stack and will show up in pihole as hostname
+                         # reuse it in your prometheus configuration to label your host-data consistantly
 HOSTIP=192.168.1.10      # IP adress of the PURE host, this will be used to connect pihole to unbound 
 LOKIIP=192.168.1.22      # IP adress of your LOKI server
 EOF
 ```
-edit the .env file to reflect the settings in your environment
+these variables are used in the compose.yanl, so PUREstack will not deploy without them. Edit the .env file to reflect the settings in your environment.  
 ```
 sudo nano .env
 ```
