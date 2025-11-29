@@ -140,7 +140,7 @@ HOSTIP=192.168.1.10      # IP adress of the PURE host, this will be used to conn
 LOKIIP=192.168.1.22      # IP adress of your LOKI server
 EOF
 ```
-these variables are used in the compose.yanl, so PUREstack will not deploy without them. Edit the .env file to reflect the settings in your environment.  
+these variables are used in the compose.yaml, so PUREstack will not deploy without them. Edit the .env file to reflect the settings in your environment.  
 ```
 sudo nano .env
 ```
