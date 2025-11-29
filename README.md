@@ -9,8 +9,8 @@ recursive DNS resolution, caching, metrics exporting and log collection
   - Prometheus and Loki can be used as data sources in Grafana for visualization
   
 For more details, see the PUREstack project page: https://github.com/Virgil-TD/PUREstack  
-A stack for grafana, prometheus and loki is available here: https://github.com/Virgil-TD/GRAPLstack  
-For en exporter I used https://github.com/ar51an/unbound-exporter. 
+A stack for grafana, prometheus and loki is available here: https://github.com/Virgil-TD/GRAPLstack   
+For an unbound metrics exporter see https://github.com/ar51an/unbound-exporter. 
 For a grafana dashboard for unbound metrics see: https://github.com/ar51an/unbound-dashboard  
 
 You can deploy multiple PUREstacks in your environment (for redundancy) although not on teh same host as Pihole requires unique ownership of port 53.  
