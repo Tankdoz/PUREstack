@@ -13,7 +13,7 @@ A stack for grafana, prometheus and loki is available here: https://github.com/V
 For an unbound metrics exporter see https://github.com/ar51an/unbound-exporter  
 For a grafana dashboard for unbound metrics see: https://github.com/ar51an/unbound-dashboard  
 
-You can deploy multiple PUREstacks in your environment (for redundancy) although not on teh same host as Pihole requires unique ownership of port 53.  
+You can deploy multiple PUREstacks in your environment (for redundancy) although not on the same host as Pihole requires unique ownership of port 53.  
 
 **Pay attention to the volume directory permissions as different containers can run under different UIDs and GIDs**  
 **the permissions are set accordingly and explained in the relevant sections below**  
@@ -124,23 +124,24 @@ sudo chmod 660 ~/dockerprojects/stacks/pure/volumes/promtail/promtail-config.yam
 ```
 
 ## Step 4: Start your PURE stack(s):
-Multiple PURE stacks can be started in case you want multiple DNS resolvers. It's not possible though, to deploy multiple stacks on the same host, as a stack needs unique ownership of port 53. 
-In order to differentiate between the different stacks you should use the .env file. For the PURE stack the default .env file contains at least:
+PUREstacks compose.yaml requires 4 environment settings to be set:
+- webpassword: used to log into the Pihole webinterface
+- hostname: will be used by promtail to label data and will show up in Pihole webinterface as hostname
+- IP adress host: wil be used to connect Pihole to Unbound 
+- IP adress Loki: required for promtail to find Loki
 
-.env file:  
+Create default .env file:  
 ```
-cd ~/dockerprojects/stacks/pure
-cat > .env <<EOF
-WEBPASSWORD=changeme     # require to log into the Pihole webinterface; choose your own password. 
-HOSTNAME=PUREstack-010   # will be used by promtail to label the data from this stack and will show up in pihole as hostname
-                         # reuse it in your prometheus configuration to label your host-data consistantly
-HOSTIP=192.168.1.10      # IP adress of the PURE host, this will be used to connect pihole to unbound 
+cat > ~/dockerprojects/stacks/pure/.env <<EOF
+WEBPASSWORD=changeme     # choose your own password. 
+HOSTNAME=PUREstack-010   # reuse it in your prometheus configuration to label your host-data consistantly
+HOSTIP=192.168.1.10      # IP adress of the PUREstac host
 LOKIIP=192.168.1.22      # IP adress of your LOKI server
 EOF
 ```
 these variables are used in the compose.yaml, so PUREstack will not deploy without them. Edit the .env file to reflect the settings in your environment.  
 ```
-sudo nano .env
+sudo nano ~dockerprojects/stacks/pure/.env
 ```
 
 next bring up your stack
