@@ -10,7 +10,7 @@ recursive DNS resolution, caching, metrics exporting and log collection
   
 For more details, see the PUREstack project page: https://github.com/Virgil-TD/PUREstack  
 A stack for grafana, prometheus and loki is available here: https://github.com/Virgil-TD/GRAPLstack   
-For an unbound metrics exporter see https://github.com/ar51an/unbound-exporter. 
+For an unbound metrics exporter see https://github.com/ar51an/unbound-exporter  
 For a grafana dashboard for unbound metrics see: https://github.com/ar51an/unbound-dashboard  
 
 You can deploy multiple PUREstacks in your environment (for redundancy) although not on teh same host as Pihole requires unique ownership of port 53.  
@@ -58,20 +58,18 @@ git clone https://github.com/Virgil-TD/PUREstack.git \
 - Pi-hole runs as root inside the container
 - It can create and manage its own volume directories without manual chown or mkdir
 - Configuration is normally handled via the Pi-hole web GUI
-- make sure under DNS settings you untick any upstream DNS servers and add 127.0.0.1#5335 under Custom DNS servers
-- this will ensure Pihole only forwards to Unbound
 - If you want to enforce specific settings, define them in docker-compose or in an .env file
 
 ### 3b. Unbound volume directories and permissions
-- The klutchel/unbounf image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
-- The image runs Unbound as a non-privileged user UID 101, GID 102 after startup
+- The klutchel/unbound image is distroless --> contains only the necessary binaries and libraries to run Unbound, no shell or package manager
+- The image runs Unbound as a non-privileged user UID 101, GID 102 after startup  
 - Configuration file unbound.conf and aditional configuration files *,conf in unbound.conf.d need to be readable by 101:102
 - blocklist, although not used by unbound (pihole is doing the blocking) needs to be there to avoid warnings from the exporter
 
-unbound.conf: rw for your user, read for 101:102  (file). 
-unbound.conf.d: rwx for your user, rx for 101:102 (directory). 
-blocklists: rwx for your user, readable by 101:102  (directory). 
-unbound.block.conf rw for your user, readable by 101:102 (file) -->contains 3 dummy lines. 
+- unbound.conf: rw for your user, read for 101:102  (file)  
+- unbound.conf.d: rwx for your user, rx for 101:102 (directory)  
+- blocklists: rwx for your user, readable by 101:102  (directory)  
+- unbound.block.conf rw for your user, readable by 101:102 (file) -->contains 3 dummy lines  
 ```
 sudo chown $USER:102 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
 sudo chmod 640 ~/dockerprojects/stacks/pure/volumes/unbound/unbound.conf
