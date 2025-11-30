@@ -35,7 +35,7 @@ sudo docker run hello-world
 # add your user to the docker group to run docker without sudo
 sudo usermod -aG docker $USER
 
-# activat new group permissions (logoff/logon after is required)
+# activate new group permissions (logoff/logon after is required)
 newgrp docker
 ```
 log off and log on to finalize official docker installation
