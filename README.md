@@ -143,7 +143,7 @@ these variables are used in the compose.yaml, so PUREstack will not deploy witho
 ```
 sudo nano ~dockerprojects/stacks/pure/.env
 ```
-
+after your edits save with Ctrl+O and close out with Ctrl+X
 next bring up your stack
 ```
 cd ~/dockerprojects/stacks/pure
