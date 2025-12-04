@@ -54,21 +54,19 @@ services:
       - dnsnet
     volumes:
       - redis-data:/data # Named volume to persist Redis data
-
   unbound-exporter:
-    image: unbound-exporter:latest   # use your locally built image    
+    image: unbound-exporter:latest # use your locally built image    
     restart: unless-stopped
     ports:
-      - 9167:9167   # Prometheus metrics endpoint
+      - 9167:9167 # Prometheus metrics endpoint
     depends_on:
       - unbound
     volumes:
-      - unbound-run:/run/unbound:ro   # mount Unbound control socket
+      - unbound-run:/run/unbound:ro # mount Unbound control socket
       - ./volumes/unbound/blocklists:/opt/unbound/blocklists:ro # mount blocklists for exporter metrics
-    command: [
-      "--web.listen-address=0.0.0.0:9167",
-      "--unbound.uri=unix:///run/unbound/unbound.sock"
-    ]
+    command:
+      - --web.listen-address=0.0.0.0:9167
+      - --unbound.uri=unix:///run/unbound/unbound.sock
   promtail:
     image: grafana/promtail:3.5.8
     restart: unless-stopped
@@ -76,16 +74,15 @@ services:
       - HOSTNAME=${HOSTNAME}
       - LOKIIP=${LOKIIP}
     ports:
-      - 9080:9080   # Promtail HTTP server port
+      - 9080:9080 # Promtail HTTP server port
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro                         # to access docker logs in stdout
-      - ./volumes/promtail:/tmp                                              # to store the last read positions
+      - /var/run/docker.sock:/var/run/docker.sock:ro # to access docker logs in stdout
+      - ./volumes/promtail:/tmp # to store the last read positions
       - ./volumes/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro # promtail configuration file
     command: -config.file=/etc/promtail/config.yaml -config.expand-env=true
-
 networks:
   dnsnet:
-    driver: bridge   # Dedicated bridge network for DNS + Redis communication 
+    driver: bridge # Dedicated bridge network for DNS + Redis communication 
 volumes:
-  unbound-run: null  # Named volume for /run so Unbound can create its control socket. Used in remote control.
-  redis-data: null   # Named volume for Redis persistence
+  unbound-run: null # Named volume for /run so Unbound can create its control socket. Used in remote control.
+  redis-data: null # Named volume for Redis persistence
